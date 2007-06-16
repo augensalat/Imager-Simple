@@ -123,7 +123,7 @@ Image tags are copied from the old image(s) where applicable.
 sub scale {
     my $self = shift;
     my $opt = ref $_[-1] eq 'HASH' ? pop : {};
-    my (@args, @out, $out, $tag, $t);
+    my (@args, @out, $out, $tag, $factor_x, $factor_y, $t);
 
     for (shift, $opt->{x}, $opt->{xpixels}, $opt->{width}) {
 	push(@args, xpixels => $_), last if defined;
@@ -141,11 +141,22 @@ sub scale {
 	$out = $frame->scale(@args)
 	    or croak $frame->errstr;
 	for $tag (qw(i_format i_xres i_yres i_aspect_only
-	    gif_background gif_trans_index gif_trans_color gif_delay gif_loop
+	    gif_background gif_comment gif_delay gif_disposal
+	    gif_eliminate_unused gif_interlace gif_loop
 	)) {
 	    $out->deltag(name => $tag);
 	    $out->addtag(name => $tag, value => $_)
 		for $frame->tags(name => $tag);
+	}
+	$factor_x = $out->getwidth / $frame->getwidth;
+	$factor_y = $out->getheight / $frame->getheight;
+	for $tag (qw(gif_left gif_screen_width)) {
+	    $out->settag(name => $tag, value => int($t * $factor_x + 0.5))
+		if defined($t = $frame->tags(name => $tag));
+	}
+	for $tag (qw(gif_top gif_screen_height)) {
+	    $out->settag(name => $tag, value => int($t * $factor_y + 0.5))
+		if defined($t = $frame->tags(name => $tag));
 	}
 	push @out, $out;
     }
@@ -214,7 +225,14 @@ sub write {
 	$key = 'file';
     }
 
-    Imager->write_multi({$key => $d, type => $self->format}, @{$self->frames})
+    Imager->write_multi(
+	    {
+		$key => $d,
+		type => $self->format,
+		transp => 'threshold',
+		tr_threshold => 50
+	    },
+	    @{$self->frames})
 	or croak Imager->errstr;
 
     $self;
@@ -228,7 +246,14 @@ sub data {
     my $self = shift;
     my $data;
     
-    Imager->write_multi({data => \$data, type => $self->format}, @{$self->frames})
+    Imager->write_multi(
+	    {
+		data => \$data,
+		type => $self->format,
+		transp => 'threshold',
+		tr_threshold => 50
+	    },
+	    @{$self->frames})
 	or croak Imager->errstr;
 
     $data;
