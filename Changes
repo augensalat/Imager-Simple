@@ -1,5 +1,8 @@
 Revision history for Imager-Simple
 
+0.02    2007-08-07
+        Try to fix a weird bug where croak() is not find.
+
 0.01    2007-06-15
         First version, released on an unsuspecting world.
 

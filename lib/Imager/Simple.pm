@@ -5,7 +5,7 @@ use strict;
 
 use base 'Class::Accessor::Fast';
 
-use Carp 'croak';
+use Carp ();
 use Scalar::Util 'blessed';
 
 use Imager;
@@ -18,11 +18,11 @@ Imager::Simple - Make common Imager use cases easy
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -71,7 +71,7 @@ sub read {
     }
     push @args, 'type', $type if defined $type;
     @{$self->{frames}} = Imager->read_multi(@args)
-	or croak Imager->errstr;
+	or Carp::croak(Imager->errstr);
 
     $self->{format} = $self->{frames}->[0]->tags(name => 'i_format');
 
@@ -91,7 +91,7 @@ TODO
 =cut
 
 sub clone {
-    croak "not implemented yet";
+    Carp::croak("not implemented yet");
 }
 
 =head2 scale
@@ -139,7 +139,7 @@ sub scale {
     }
     for my $frame (@{$self->{frames}}) {
 	$out = $frame->scale(@args)
-	    or croak $frame->errstr;
+	    or Carp::croak($frame->errstr);
 	for $tag (qw(i_format i_xres i_yres i_aspect_only
 	    gif_background gif_comment gif_delay gif_disposal
 	    gif_eliminate_unused gif_interlace gif_loop
@@ -233,7 +233,7 @@ sub write {
 		tr_threshold => 50
 	    },
 	    @{$self->frames})
-	or croak Imager->errstr;
+	or Carp::croak(Imager->errstr);
 
     $self;
 }
@@ -254,7 +254,7 @@ sub data {
 		tr_threshold => 50
 	    },
 	    @{$self->frames})
-	or croak Imager->errstr;
+	or Carp::croak(Imager->errstr);
 
     $data;
 }
