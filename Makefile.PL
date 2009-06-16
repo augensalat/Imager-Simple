@@ -1,20 +1,15 @@
-use strict;
-use warnings;
-use ExtUtils::MakeMaker;
+use inc::Module::Install;
+ 
+name		'Imager::Simple';
+license		'perl';
+all_from	'lib/Imager/Simple.pm';
+author		'Bernhard Graf <graf@cpan.org>';
 
-WriteMakefile(
-    NAME                => 'Imager::Simple',
-    AUTHOR              => 'Bernhard Graf <graf@movingtarget.de>',
-    VERSION_FROM        => 'lib/Imager/Simple.pm',
-    ABSTRACT_FROM       => 'lib/Imager/Simple.pm',
-    PL_FILES            => {},
-    PREREQ_PM => {
-        'Test::More' => 0,
-        'Carp' => 0,
-        'Scalar::Util' => 0,
-        'Class::Accessor::Fast' => 0,
-        'Imager' => 0,
-    },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Imager-Simple-*' },
-);
+build_requires  'Test::More';
+ 
+requires	'Carp';
+requires	'Class::Accessor::Fast';
+requires	'Imager';
+requires	'Scalar::Util';
+ 
+WriteAll;

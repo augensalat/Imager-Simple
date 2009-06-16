@@ -26,7 +26,7 @@ our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-C<Imager::Simple> makes common uses cases with L<Imager|Imager> easy.
+C<Imager::Simple> makes common use cases with L<Imager|Imager> easy.
 
   use Imager::Simple;
 
@@ -269,6 +269,9 @@ Bernhard Graf, C<< <graf at movingtarget.de> >>
 
 =head1 BUGS
 
+This module definitely needs more work. It only implements some basic functionality
+(read, scale, write). No test have been written.
+
 Please report any bugs or feature requests to
 C<bug-imager-simple at rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Imager-Simple>.
@@ -301,13 +304,15 @@ L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Imager-Simple>
 
 L<http://search.cpan.org/dist/Imager-Simple>
 
+=item * Code repository
+
+L<http://github.com/augensalat/Imager-Simple/tree/master>
+
 =back
 
-=head1 ACKNOWLEDGEMENTS
+=head1 COPYRIGHT
 
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2007 Bernhard Graf, all rights reserved.
+Copyright 2007 - 2009 Bernhard Graf.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
