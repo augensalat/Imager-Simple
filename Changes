@@ -1,13 +1,15 @@
 Revision history for Imager-Simple
 
-0.10	2009-06-16
-	- switch to module install
-	- public repository on
-	  http://github.com/augensalat/Imager-Simple/tree/master
+0.010000	2009-06-16
 
-0.02    2007-08-07
-        Try to fix a weird bug where croak() is not found.
+- switch to module install
+- public repository on
+  http://github.com/augensalat/Imager-Simple/tree/master
 
-0.01    2007-06-15
-        First version, released on an unsuspecting world.
+0.002000	2007-08-07
 
+- Try to fix a weird bug where croak() is not found.
+
+0.001000	2007-06-15
+
+- First version, released on an unsuspecting world.
