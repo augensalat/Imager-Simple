@@ -14,19 +14,19 @@ __PACKAGE__->mk_accessors(qw(frames format));
 
 =head1 NAME
 
-Imager::Simple - Make common Imager use cases easy
+Imager::Simple - Make easy things easy with Imager
 
 =head1 VERSION
 
-Version 0.010000
+Version 0.010001
 
 =cut
 
-our $VERSION = '0.010000';
+our $VERSION = '0.010001';
 
 =head1 SYNOPSIS
 
-C<Imager::Simple> makes common use cases with L<Imager|Imager> easy.
+C<Imager::Simple> simplyfies common tasks with L<Imager|Imager>.
 
   use Imager::Simple;
 
@@ -38,11 +38,47 @@ C<Imager::Simple> makes common use cases with L<Imager|Imager> easy.
     die "error from Imager::Simple: $@";
   }
 
+=head1 DESCRIPTION
+
+L<Imager|Imager> is a powerful module for processing image data, but
+it is the power that makes it sometimes hard to use for simple tasks,
+like for example read an image, scale it, convert it to another
+format and save it somewhere. This module tries to DWIM with as little
+effort as possible.
+
 =head1 METHODS
 
 =head2 read
 
   $img = Imager::Simple->read($source, $type);
+
+A constructor method that reads an image and returns an C<Image::Simple>
+object. C<$source> can be
+
+=over
+
+=item a scalar
+
+which is taken as a name of a file, that contains the image;
+
+=item a reference to a scalar
+
+that contains the image data itself;
+
+=item a file handle
+
+of an opened file from which the image data can be read.
+
+=back
+
+The C<$type> is optional. If given it must be an image type known by
+L<Imager|Imager> like C<png> or C<jpeg>. If not given L<Imager|Imager>
+tries to guess the image type.
+
+Image data is read by L<Imager's read_multi() method|Imager::Files/Description>.
+The returned object provides the individual images through the L</frames>
+method. For most images C<< $img->frames >> is a reference to an array
+with one element (C<< @{$img->frames} == 1 >>).
 
 =cut
 
@@ -82,7 +118,13 @@ sub read {
 
   $img->format('gif');
 
-Set output format for the image.
+Accessor to the image's output format.
+
+=head2 frames
+
+C<Imager::Simple> supports multi-image files, e.g. GIF animations.
+The individual images are stored in an array of L<Image|Image> objects,
+that is available through the C<frames> method.
 
 =head2 clone
 
@@ -187,11 +229,7 @@ that must be opened in write mode and should be set to C<binmode>.
 
 points to a buffer where the image data has to be stored.
 
-=item A code reference
-
-to do the writing.
-
-=item Avoided
+=item not given
 
 in what case write acts like L<the data() method|/data> by returning
 the image buffer.
@@ -240,6 +278,8 @@ sub write {
 
 =head2 data
 
+Returns the raw image data.
+
 =cut
 
 sub data {
@@ -265,7 +305,7 @@ __END__
 
 =head1 AUTHOR
 
-Bernhard Graf, C<< <graf at movingtarget.de> >>
+Bernhard Graf C<< <graf at cpan.org> >>
 
 =head1 BUGS
 
