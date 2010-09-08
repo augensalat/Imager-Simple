@@ -1,10 +1,19 @@
 Revision history for Imager-Simple
 
+0.010002	2010-09-08
+
+- Tried to improve scaling for animated gifs.
+
+0.010001	2009-06-16
+
+- More docs.
+- First CPAN release.
+
 0.010000	2009-06-16
 
-- switch to module install
-- public repository on
-  http://github.com/augensalat/Imager-Simple/tree/master
+- Wwitch to module install.
+- Public repository on
+  http://github.com/augensalat/Imager-Simple/tree/master .
 
 0.002000	2007-08-07
 

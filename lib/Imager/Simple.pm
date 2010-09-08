@@ -18,15 +18,15 @@ Imager::Simple - Make easy things easy with Imager
 
 =head1 VERSION
 
-Version 0.010001
+Version 0.010002
 
 =cut
 
-our $VERSION = '0.010001';
+our $VERSION = '0.010002';
 
 =head1 SYNOPSIS
 
-C<Imager::Simple> simplyfies common tasks with L<Imager|Imager>.
+C<Imager::Simple> simplyfies common tasks with L<Imager>.
 
   use Imager::Simple;
 
@@ -40,13 +40,17 @@ C<Imager::Simple> simplyfies common tasks with L<Imager|Imager>.
 
 =head1 DESCRIPTION
 
-L<Imager|Imager> is a powerful module for processing image data, but
-it is the power that makes it sometimes hard to use for simple tasks,
-like for example read an image, scale it, convert it to another
-format and save it somewhere. This module tries to DWIM with as little
-effort as possible.
+L<Imager> is a powerful module for processing image data, but it is the
+power that makes it sometimes hard to use for simple tasks, like for
+example read an image, scale it, convert it to another format and save it
+somewhere. This module tries to DWIM with as little effort as possible.
 
 =head1 METHODS
+
+=cut
+
+# internal - get the first defined value
+sub first_defined ($;@) { for (@_) { return $_ if defined } }
 
 =head2 read
 
@@ -72,8 +76,8 @@ of an opened file from which the image data can be read.
 =back
 
 The C<$type> is optional. If given it must be an image type known by
-L<Imager|Imager> like C<png> or C<jpeg>. If not given L<Imager|Imager>
-tries to guess the image type.
+L<Imager> like C<png> or C<jpeg>. If not given L<Imager> tries to guess the
+image type.
 
 Image data is read by L<Imager's read_multi() method|Imager::Files/Description>.
 The returned object provides the individual images through the L</frames>
@@ -165,41 +169,73 @@ Image tags are copied from the old image(s) where applicable.
 sub scale {
     my $self = shift;
     my $opt = ref $_[-1] eq 'HASH' ? pop : {};
-    my (@args, @out, $out, $tag, $factor_x, $factor_y, $t);
+    my (%args, %scale, @out, $out, $tag, $factor_x, $factor_y, $t);
+    my @frames = @{$self->{frames}}
+	or return $self;
+    my ($screen_width, $screen_height);
+    my ($width, $height);
 
     for (shift, $opt->{x}, $opt->{xpixels}, $opt->{width}) {
-	push(@args, xpixels => $_), last if defined;
+	$width = $_, last if defined;
     }
     for (shift, $opt->{y}, $opt->{ypixels}, $opt->{height}) {
-	push(@args, ypixels => $_), last if defined;
+	$height = $_, last if defined;
     }
     for (shift, $opt->{type}) {
-	push(@args, type =>  $_), last if defined;
+	$args{type} = $_, last if defined;
     }
-    for (qw(constrain scalefactor xscalefactor yscalefactor qtype)) {
-	push @args, $_, $t if defined($t = $opt->{$_});
+    for (qw(constrain qtype)) {
+	$args{$_} = $t, last if defined($t = $opt->{$_});
     }
-    for my $frame (@{$self->{frames}}) {
-	$out = $frame->scale(@args)
+    for (qw(scalefactor xscalefactor yscalefactor)) {
+	$scale{$_} = $t, last if defined($t = $opt->{$_});
+    }
+    for (my $i = 0; my $frame = $frames[$i]; ++$i) {
+
+	if ($i == 0) {
+	    if ($frame->tags(name => 'i_format') eq 'gif') {
+		$args{xscalefactor} = $factor_x =
+		    defined $width ?
+			$width / $frame->tags(name => 'gif_screen_width') :
+			first_defined $scale{xscalefactor}, $scale{scalefactor};
+		$args{yscalefactor} = $factor_y =
+		    defined $height ?
+			$height / $frame->tags(name => 'gif_screen_height') :
+			first_defined $scale{yscalefactor}, $scale{scalefactor} || $factor_x || 1;
+	    }
+	    else {
+		$args{xscalefactor} = $factor_x =
+		    defined $width ?
+			$width / $frame->getwidth :
+			first_defined $scale{xscalefactor}, $scale{scalefactor};
+		$args{yscalefactor} = $factor_y =
+		    defined $height ?
+			$height / $frame->getheight :
+			first_defined $scale{yscalefactor}, $scale{scalefactor} || $factor_x || 1;
+	    }
+	    $args{xscalefactor} = $factor_x = $factor_y
+		unless defined $factor_x;
+	}
+
+	$out = $frame->scale(%args)
 	    or Carp::croak($frame->errstr);
-	for $tag (qw(i_format i_xres i_yres i_aspect_only
-	    gif_background gif_comment gif_delay gif_disposal
-	    gif_eliminate_unused gif_interlace gif_loop
-	)) {
-	    $out->deltag(name => $tag);
-	    $out->addtag(name => $tag, value => $_)
-		for $frame->tags(name => $tag);
+
+	if ($frame->tags(name => 'i_format') eq 'gif') {
+	    $out->settag(name => 'gif_left', value => int($factor_x * $frame->tags(name => 'gif_left')));
+	    $out->settag(name => 'gif_top', value => int($factor_y * $frame->tags(name => 'gif_top')));
+
+	    $out->settag(name => 'gif_screen_width', value => ceil($factor_x * $frame->tags(name => 'gif_screen_width')));
+	    $out->settag(name => 'gif_screen_height', value => ceil($factor_y * $frame->tags(name => 'gif_screen_height')));
+
+	    for $tag (qw/gif_delay gif_user_input gif_loop gif_disposal/) {
+		$out->settag(name => $tag, value => $frame->tags(name => $tag));
+	    }
+
+	    if ($frame->tags(name => 'gif_local_map')) {
+		$out->settag(name => 'gif_local_map', value => 1);
+	    }
 	}
-	$factor_x = $out->getwidth / $frame->getwidth;
-	$factor_y = $out->getheight / $frame->getheight;
-	for $tag (qw(gif_left gif_screen_width)) {
-	    $out->settag(name => $tag, value => int($t * $factor_x + 0.5))
-		if defined($t = $frame->tags(name => $tag));
-	}
-	for $tag (qw(gif_top gif_screen_height)) {
-	    $out->settag(name => $tag, value => int($t * $factor_y + 0.5))
-		if defined($t = $frame->tags(name => $tag));
-	}
+
 	push @out, $out;
     }
     $self->{frames} = \@out;
@@ -352,7 +388,7 @@ L<http://github.com/augensalat/Imager-Simple/tree/master>
 
 =head1 COPYRIGHT
 
-Copyright 2007 - 2009 Bernhard Graf.
+Copyright 2007 - 2010 Bernhard Graf.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
