@@ -18,11 +18,11 @@ Imager::Simple - Make easy things easy with Imager
 
 =head1 VERSION
 
-Version 0.010002
+Version 0.010003
 
 =cut
 
-our $VERSION = '0.010002';
+our $VERSION = '0.010003';
 
 =head1 SYNOPSIS
 

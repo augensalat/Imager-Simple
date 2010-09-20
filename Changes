@@ -1,5 +1,9 @@
 Revision history for Imager-Simple
 
+0.010003	2010-09-20
+
+- Tell Test::Pod::Coverage private methods.
+
 0.010002	2010-09-08
 
 - Tried to improve scaling for animated gifs.
